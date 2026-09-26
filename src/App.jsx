@@ -1,4 +1,6 @@
 import { useEffect, useState } from "react";
+import { Capacitor } from "@capacitor/core";
+import { StatusBar, Style } from "@capacitor/status-bar";
 import {
   LayoutDashboard, BriefcaseBusiness, CalendarCheck2, WalletCards, BarChart3, Users,
   Settings, Search, Bell, Plus, ArrowUpRight, Clock3, CheckCircle2, CircleAlert,
@@ -35,6 +37,19 @@ function App() {
   const [theme, setTheme] = useState(() => localStorage.getItem("ui-template-theme") || "light");
   const [swipeOffset, setSwipeOffset] = useState(0);
   const [touchStart, setTouchStart] = useState(null);
+
+  useEffect(() => {
+    if (!Capacitor.isNativePlatform()) return;
+    const updateStatusBar = async () => {
+      try {
+        await StatusBar.setStyle({ style: theme === "light" ? Style.Dark : Style.Light });
+        await StatusBar.setBackgroundColor({ color: theme === "light" ? "#f6f7f9" : "#11151c" });
+      } catch (error) {
+        console.warn("Unable to update Android status bar", error);
+      }
+    };
+    updateStatusBar();
+  }, [theme]);
 
   const toggleTheme = () => setTheme((current) => {
     const next = current === "light" ? "dark" : "light";
