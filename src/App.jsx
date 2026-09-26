@@ -3,7 +3,7 @@ import {
   LayoutDashboard, BriefcaseBusiness, CalendarCheck2, WalletCards, BarChart3, Users,
   Settings, Search, Bell, Plus, ArrowUpRight, Clock3, CheckCircle2, CircleAlert,
   ChevronDown, Menu, X, MoreHorizontal, Filter, Download, TrendingUp, UserPlus,
-  CircleDollarSign, ClipboardList, SlidersHorizontal
+  CircleDollarSign, ClipboardList, SlidersHorizontal, Sun, Moon
 } from "lucide-react";
 
 const nav = [
@@ -32,6 +32,13 @@ function App() {
   const [query, setQuery] = useState("");
   const [modal, setModal] = useState(null);
   const [workItems, setWorkItems] = useState(workSeed);
+  const [theme, setTheme] = useState(() => localStorage.getItem("ui-template-theme") || "light");
+
+  const toggleTheme = () => setTheme((current) => {
+    const next = current === "light" ? "dark" : "light";
+    localStorage.setItem("ui-template-theme", next);
+    return next;
+  });
 
   const go = (page) => { setActive(page); setMobileOpen(false); setQuery(""); };
 
@@ -45,12 +52,16 @@ function App() {
     Settings: <SettingsPage role={role} />
   }[active];
 
-  return <div className="app">
+  return <div className={"app theme-" + theme}>
     <aside className={mobileOpen ? "sidebar open" : "sidebar"}>
       <div className="brand"><div className="brand-mark">U</div><div><b>UI Template</b><span>Work management</span></div></div>
       <div className="workspace"><span>Workspace</span><button><span>Acme Operations</span><ChevronDown size={15}/></button></div>
       <nav>{nav.map(([label, Icon]) => <button key={label} className={active===label?"nav-item active":"nav-item"} onClick={()=>go(label)}><Icon size={19}/><span>{label}</span></button>)}</nav>
       <div className="sidebar-bottom">
+        <div className="theme-switcher">
+          <div className="theme-switch-label"><div className="theme-switch-icon">{theme==="light"?<Sun size={16}/>:<Moon size={16}/>}</div><div><b>{theme==="light"?"Light theme":"Dark theme"}</b><span>{theme==="light"?"Switch to dark":"Switch to light"}</span></div></div>
+          <button className="theme-toggle" onClick={toggleTheme} aria-label={"Switch to " + (theme==="light"?"dark":"light") + " theme"}><span className={theme==="dark"?"active":""}>{theme==="light"?<Sun size={13}/>:<Moon size={13}/>}</span></button>
+        </div>
         <button className={active==="Settings"?"nav-item active":"nav-item"} onClick={()=>go("Settings")}><Settings size={19}/><span>Settings</span></button>
         <div className="user-mini"><div className="avatar">SC</div><div><b>Shivaraj</b><span>{role}</span></div><MoreHorizontal size={18}/></div>
       </div>
