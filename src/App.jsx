@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import {
   LayoutDashboard, BriefcaseBusiness, CalendarCheck2, WalletCards, BarChart3, Users,
   Settings, Search, Bell, Plus, ArrowUpRight, Clock3, CheckCircle2, CircleAlert,
@@ -33,6 +33,8 @@ function App() {
   const [modal, setModal] = useState(null);
   const [workItems, setWorkItems] = useState(workSeed);
   const [theme, setTheme] = useState(() => localStorage.getItem("ui-template-theme") || "light");
+  const [swipeOffset, setSwipeOffset] = useState(0);
+  const [touchStart, setTouchStart] = useState(null);
 
   const toggleTheme = () => setTheme((current) => {
     const next = current === "light" ? "dark" : "light";
@@ -41,6 +43,51 @@ function App() {
   });
 
   const go = (page) => { setActive(page); setMobileOpen(false); setQuery(""); };
+
+  const handleTouchStart = (e) => {
+    const touch = e.touches[0];
+    setTouchStart({ x: touch.clientX, y: touch.clientY });
+  };
+
+  const handleTouchMove = (e) => {
+    if (!touchStart) return;
+    const touch = e.touches[0];
+    const dx = touch.clientX - touchStart.x;
+    const dy = touch.clientY - touchStart.y;
+    if (Math.abs(dx) > Math.abs(dy) && Math.abs(dx) > 12) {
+      setSwipeOffset(Math.max(-80, Math.min(80, dx)));
+    }
+  };
+
+  const handleTouchEnd = () => {
+    if (!touchStart) return;
+    const dx = swipeOffset;
+    const pages = nav.map(([label]) => label);
+    const index = pages.indexOf(active);
+    if (Math.abs(dx) >= 55) {
+      if (active === "Overview" && dx > 55) {
+        setMobileOpen(true);
+      } else if (dx < -55 && index < pages.length - 1) {
+        go(pages[index + 1]);
+      } else if (dx > 55 && index > 0) {
+        go(pages[index - 1]);
+      }
+    }
+    setSwipeOffset(0);
+    setTouchStart(null);
+  };
+
+  useEffect(() => {
+    const onKey = (e) => {
+      if (e.key === "ArrowRight") {
+        if (active === "Overview") setMobileOpen(true);
+        else { const i = nav.findIndex(([x]) => x === active); if (i > 0) go(nav[i - 1][0]); }
+      }
+      if (e.key === "ArrowLeft") { const i = nav.findIndex(([x]) => x === active); if (i < nav.length - 1) go(nav[i + 1][0]); }
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [active]);
 
   const page = {
     Overview: <OverviewPage go={go} />,
@@ -52,7 +99,7 @@ function App() {
     Settings: <SettingsPage role={role} />
   }[active];
 
-  return <div className={"app theme-" + theme}>
+  return <div className={"app theme-" + theme} onTouchStart={handleTouchStart} onTouchMove={handleTouchMove} onTouchEnd={handleTouchEnd}>
     <aside className={mobileOpen ? "sidebar open" : "sidebar"}>
       <div className="brand"><div className="brand-mark">U</div><div><b>UI Template</b><span>Work management</span></div></div>
       <div className="workspace"><span>Workspace</span><button><span>Acme Operations</span><ChevronDown size={15}/></button></div>
@@ -77,7 +124,7 @@ function App() {
           <button className="role-switch" onClick={()=>setRole(role==="Admin"?"Employee":"Admin")}>{role}<ChevronDown size={15}/></button>
         </div>
       </header>
-      <div className="content">{page}</div>
+      <div className="content" style={{transform:`translateX(${swipeOffset * 0.12}px)`,transition:touchStart ? "none":"transform .28s ease"}}>{page}</div>
       <div className="mobile-nav">{nav.slice(0,5).map(([label,Icon])=><button key={label} className={active===label?"active":""} onClick={()=>go(label)}><Icon size={19}/><span>{label}</span></button>)}</div>
     </main>
 
