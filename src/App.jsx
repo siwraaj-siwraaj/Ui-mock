@@ -1,16 +1,14 @@
-import { useEffect, useState } from "react";
-import { Capacitor } from "@capacitor/core";
-import { StatusBar, Style } from "@capacitor/status-bar";
+import { useMemo, useState } from "react";
 import {
   LayoutDashboard, BriefcaseBusiness, CalendarCheck2, WalletCards, BarChart3, Users,
   Settings, Search, Bell, Plus, ArrowUpRight, Clock3, CheckCircle2, CircleAlert,
   ChevronDown, Menu, X, MoreHorizontal, Filter, Download, TrendingUp, UserPlus,
-  CircleDollarSign, ClipboardList, SlidersHorizontal, Sun, Moon, HandCoins
+  CircleDollarSign, ClipboardList, SlidersHorizontal, Sun, Moon
 } from "lucide-react";
 
 const nav = [
   ["Overview", LayoutDashboard], ["Work", BriefcaseBusiness], ["Attendance", CalendarCheck2],
-  ["Payments", WalletCards], ["Advances", HandCoins], ["Reports", BarChart3], ["Employees", Users]
+  ["Payments", WalletCards], ["Reports", BarChart3], ["Employees", Users]
 ];
 
 const workSeed = [
@@ -35,22 +33,6 @@ function App() {
   const [modal, setModal] = useState(null);
   const [workItems, setWorkItems] = useState(workSeed);
   const [theme, setTheme] = useState(() => localStorage.getItem("ui-template-theme") || "light");
-  const [swipeOffset, setSwipeOffset] = useState(0);
-  const [touchStart, setTouchStart] = useState(null);
-
-  useEffect(() => {
-    if (!Capacitor.isNativePlatform()) return;
-    const updateStatusBar = async () => {
-      try {
-        await StatusBar.setStyle({ style: theme === "light" ? Style.Dark : Style.Light });
-        await StatusBar.setBackgroundColor({ color: theme === "light" ? "#f6f7f9" : "#11151c" });
-      } catch (error) {
-        console.warn("Unable to update Android status bar", error);
-      }
-    };
-    updateStatusBar();
-  }, [theme]);
-
   const toggleTheme = () => setTheme((current) => {
     const next = current === "light" ? "dark" : "light";
     localStorage.setItem("ui-template-theme", next);
@@ -59,64 +41,18 @@ function App() {
 
   const go = (page) => { setActive(page); setMobileOpen(false); setQuery(""); };
 
-  const handleTouchStart = (e) => {
-    const touch = e.touches[0];
-    setTouchStart({ x: touch.clientX, y: touch.clientY });
-  };
-
-  const handleTouchMove = (e) => {
-    if (!touchStart) return;
-    const touch = e.touches[0];
-    const dx = touch.clientX - touchStart.x;
-    const dy = touch.clientY - touchStart.y;
-    if (Math.abs(dx) > Math.abs(dy) && Math.abs(dx) > 12) {
-      setSwipeOffset(Math.max(-80, Math.min(80, dx)));
-    }
-  };
-
-  const handleTouchEnd = () => {
-    if (!touchStart) return;
-    const dx = swipeOffset;
-    const pages = nav.map(([label]) => label);
-    const index = pages.indexOf(active);
-    if (Math.abs(dx) >= 55) {
-      if (active === "Overview" && dx > 55) {
-        setMobileOpen(true);
-      } else if (dx < -55 && index < pages.length - 1) {
-        go(pages[index + 1]);
-      } else if (dx > 55 && index > 0) {
-        go(pages[index - 1]);
-      }
-    }
-    setSwipeOffset(0);
-    setTouchStart(null);
-  };
-
-  useEffect(() => {
-    const onKey = (e) => {
-      if (e.key === "ArrowRight") {
-        if (active === "Overview") setMobileOpen(true);
-        else { const i = nav.findIndex(([x]) => x === active); if (i > 0) go(nav[i - 1][0]); }
-      }
-      if (e.key === "ArrowLeft") { const i = nav.findIndex(([x]) => x === active); if (i < nav.length - 1) go(nav[i + 1][0]); }
-    };
-    window.addEventListener("keydown", onKey);
-    return () => window.removeEventListener("keydown", onKey);
-  }, [active]);
-
   const page = {
     Overview: <OverviewPage go={go} />,
     Work: <WorkPage items={workItems} setItems={setWorkItems} query={query} setQuery={setQuery} openModal={()=>setModal("work")} />,
     Attendance: <AttendancePage query={query} setQuery={setQuery} />,
     Payments: <PaymentsPage query={query} setQuery={setQuery} />,
-    Advances: <AdvancesPage />,
     Reports: <ReportsPage />,
     Employees: <EmployeesPage query={query} setQuery={setQuery} openModal={()=>setModal("employee")} />,
     Settings: <SettingsPage role={role} />
   }[active];
 
-  return <div className={"app theme-" + theme} onTouchStart={handleTouchStart} onTouchMove={handleTouchMove} onTouchEnd={handleTouchEnd}>
-    {mobileOpen && <button className="sidebar-backdrop" aria-label="Close sidebar" onClick={()=>setMobileOpen(false)} />}\n    <aside className={mobileOpen ? "sidebar open" : "sidebar"}>
+  return <div className={"app theme-" + theme}>
+    <aside className={mobileOpen ? "sidebar open" : "sidebar"}>
       <div className="brand"><div className="brand-mark">U</div><div><b>UI Template</b><span>Work management</span></div></div>
       <div className="workspace"><span>Workspace</span><button><span>Acme Operations</span><ChevronDown size={15}/></button></div>
       <nav>{nav.map(([label, Icon]) => <button key={label} className={active===label?"nav-item active":"nav-item"} onClick={()=>go(label)}><Icon size={19}/><span>{label}</span></button>)}</nav>
@@ -140,7 +76,7 @@ function App() {
           <button className="role-switch" onClick={()=>setRole(role==="Admin"?"Employee":"Admin")}>{role}<ChevronDown size={15}/></button>
         </div>
       </header>
-      <div className="content" style={{transform:`translateX(${swipeOffset * 0.12}px)`,transition:touchStart ? "none":"transform .28s ease"}}>{page}</div>
+      <div className="content">{page}</div>
       <div className="mobile-nav">{nav.slice(0,5).map(([label,Icon])=><button key={label} className={active===label?"active":""} onClick={()=>go(label)}><Icon size={19}/><span>{label}</span></button>)}</div>
     </main>
 
@@ -208,18 +144,6 @@ function PaymentsPage({query,setQuery}) {
   return <>
     <PageHeader eyebrow="Payroll workspace" title="Payments" text="Track employee payouts, pending amounts and payment history." action={<button className="primary"><Plus size={18}/> Record payment</button>}/>
     <div className="card"><Toolbar><div className="tabs">{["Pending","Paid","Overdue","All"].map(x=><button key={x} className={tab===x?"tab active":"tab"} onClick={()=>setTab(x)}>{x}</button>)}</div><SearchBox value={query} onChange={setQuery} placeholder="Search employee..."/></Toolbar><div className="table-wrap"><table><thead><tr><th>Employee</th><th>Team</th><th>Amount</th><th>Status</th><th></th></tr></thead><tbody>{visible.map(x=><tr key={x.name}><td><div className="person"><div className="avatar small">{initials(x.name)}</div><b>{x.name}</b></div></td><td>{x.team}</td><td><b>{x.amount}</b></td><td><span className={"badge "+statusClass(x.status)}>{x.status}</span></td><td>{x.status!=="Paid"&&<button className="text-action" onClick={()=>setPaid(v=>[...v,x.name])}>Mark paid</button>}</td></tr>)}</tbody></table></div></div>
-  </>;
-}
-
-function AdvancesPage() {
-  const advances = [
-    { name: "Ananya Rao", purpose: "Travel expenses", amount: "₹5,000", date: "24 Sep 2026", status: "Pending" },
-    { name: "Rahul Kumar", purpose: "Personal advance", amount: "₹8,000", date: "22 Sep 2026", status: "Approved" },
-    { name: "Vikram Shah", purpose: "Equipment purchase", amount: "₹3,500", date: "20 Sep 2026", status: "Pending" }
-  ];
-  return <>
-    <PageHeader eyebrow="Employee finance" title="Advances" text="Review employee advance requests and track repayments." action={<button className="primary"><Plus size={18}/> New advance</button>}/>
-    <div className="card"><Toolbar><div className="tabs"><button className="tab active">All advances</button><button className="tab">Pending</button><button className="tab">Approved</button></div></Toolbar><div className="table-wrap"><table><thead><tr><th>Employee</th><th>Purpose</th><th>Amount</th><th>Requested</th><th>Status</th></tr></thead><tbody>{advances.map(x=><tr key={x.name}><td><div className="person"><div className="avatar small">{initials(x.name)}</div><b>{x.name}</b></div></td><td>{x.purpose}</td><td><b>{x.amount}</b></td><td>{x.date}</td><td><span className={"badge "+(x.status==="Approved"?"done":"late")}>{x.status}</span></td></tr>)}</tbody></table></div></div>
   </>;
 }
 
