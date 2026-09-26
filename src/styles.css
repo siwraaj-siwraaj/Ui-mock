@@ -24,3 +24,13 @@
 .app.theme-dark .ring:before,.app.theme-dark .donut>div{background:var(--surface)}.app.theme-dark .ring{background:conic-gradient(#8fa4c6 0 87.5%,#303846 87.5%)}.app.theme-dark .donut{background:conic-gradient(#6f8fd1 0 61%,#b9984d 61% 74%,#454e5c 74% 100%)}
 .app.theme-dark .progress>div{background:#303744}.app.theme-dark .progress>div span{background:#aab8ce}.app.theme-dark .badge{background:#2a303b;color:#b8c1cf}.app.theme-dark .badge.done{background:#26342b;color:#a9c1ad}.app.theme-dark .badge.risk{background:#3a2929;color:#e3a4a4}.app.theme-dark .tab.active{background:#29344d;color:#a9bce8}.app.theme-dark .bar-col span{background:#596b91}.app.theme-dark .modal-backdrop{background:rgba(0,0,0,.58)}
 .app.theme-dark .primary{background:#eef2f7;color:#18212f}.app.theme-dark .ghost{color:#aeb8c7}.app.theme-dark .text-action{color:#9fb5ee}.app.theme-dark .page-header h1 span{color:#aab8cc}
+
+
+/* Android safe-area: keep the app header below the system status bar */
+html,body,#root{min-height:100%;background:var(--bg,#f6f7f9)}
+.topbar{padding-top:env(safe-area-inset-top,0px);height:calc(68px + env(safe-area-inset-top,0px));}
+.sidebar{padding-top:max(22px, env(safe-area-inset-top,0px) + 12px);}
+@media(max-width:760px){
+  .topbar{height:calc(60px + env(safe-area-inset-top,0px));padding-top:env(safe-area-inset-top,0px);}
+  .sidebar{padding-top:max(18px, env(safe-area-inset-top,0px) + 10px);}
+}
