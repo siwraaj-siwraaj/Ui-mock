@@ -94,6 +94,7 @@ function App() {
     {modal==="actions" && <QuickActions close={()=>setModal(null)} choose={(action)=>{setModal(null);setTimeout(()=>setModal(action),0)}} />}
     {modal==="labour" && <LabourModal close={()=>setModal(null)} />}
     {modal==="payment" && <PaymentModal close={()=>setModal(null)} />}
+    {modal==="attendance" && <AttendanceModal close={()=>setModal(null)} />}
   </div>;
 }
 
@@ -230,6 +231,7 @@ function QuickActions({close,choose}) {
       <button className="action-tile" onClick={()=>choose("advance")}><div className="quick-icon"><CircleDollarSign size={20}/></div><div><b>Add advance</b><span>Record an employee advance</span></div></button>
       <button className="action-tile" onClick={()=>choose("labour")}><div className="quick-icon"><Users size={20}/></div><div><b>Add labour</b><span>Add a worker to the workspace</span></div></button>
       <button className="action-tile" onClick={()=>choose("payment")}><div className="quick-icon"><WalletCards size={20}/></div><div><b>Process payments</b><span>Review and process pending payouts</span></div></button>
+      <button className="action-tile" onClick={()=>choose("attendance")}><div className="quick-icon"><CalendarCheck2 size={20}/></div><div><b>Mark attendance</b><span>Record today’s employee attendance</span></div></button>
     </div>
   </Modal>;
 }
@@ -238,4 +240,5 @@ function AdvanceModal({close,add}) {
   return <Modal title="Add advance" close={close}><label>Employee<select value={employee} onChange={e=>setEmployee(e.target.value)}>{employeesSeed.map(x=><option key={x[0]}>{x[0]}</option>)}</select></label><label>Amount<input autoFocus value={amount} onChange={e=>setAmount(e.target.value)} placeholder="₹ 0"/></label><label>Reason<input value={reason} onChange={e=>setReason(e.target.value)} placeholder="Reason for advance"/></label><div className="modal-actions"><button className="secondary" onClick={close}>Cancel</button><button className="primary" disabled={!amount.trim()} onClick={()=>add({employee,amount:amount.trim().startsWith("₹")?amount.trim():"₹"+amount.trim(),reason:reason.trim()||"Employee advance",date:"26 Sep 2026",status:"Pending"})}>Add advance</button></div></Modal>;
 }
 function LabourModal({close}) { return <Modal title="Add labour" close={close}><label>Full name<input autoFocus placeholder="Worker name"/></label><label>Work type<select><option>Production</option><option>Paper</option><option>Mesh</option><option>General labour</option></select></label><label>Daily rate<input placeholder="₹ 0"/></label><div className="modal-actions"><button className="secondary" onClick={close}>Cancel</button><button className="primary" onClick={close}>Add labour</button></div></Modal>; }
+function AttendanceModal({close}) { return <Modal title="Mark attendance" close={close}><label>Employee<select><option>Ananya Rao</option><option>Rahul Kumar</option><option>Meera S</option><option>Vikram Shah</option><option>Priya Nair</option><option>Arjun Das</option></select></label><label>Status<select><option>Present</option><option>Late</option><option>Absent</option></select></label><div className="modal-actions"><button className="secondary" onClick={close}>Cancel</button><button className="primary" onClick={close}>Mark attendance</button></div></Modal>; }
 function PaymentModal({close}) { return <Modal title="Process payments" close={close}><p className="modal-note">Review pending employee payouts from the Payments section before processing.</p><div className="payment-preview">{employeesSeed.filter(x=>x[0]!=="Meera S").slice(0,4).map(x=><div key={x[0]}><span>{x[0]}</span><b>{x[3]}</b></div>)}</div><div className="modal-actions"><button className="secondary" onClick={close}>Cancel</button><button className="primary" onClick={close}>Process payments</button></div></Modal>; }
