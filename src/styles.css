@@ -78,3 +78,14 @@ html,body,#root{min-height:100%;background:var(--bg,#f6f7f9)}
 /* Mobile sidebar outside-tap backdrop */
 .sidebar-backdrop{display:none}
 @media(max-width:760px){.sidebar-backdrop{display:block;position:fixed;inset:0;border:0;padding:0;background:rgba(17,24,39,.32);z-index:19;cursor:pointer}.sidebar{z-index:20}}
+
+
+/* Keep mobile chrome stationary while only the page content scrolls */
+@media(max-width:760px){
+  html,body,#root{height:100%;min-height:0;overflow:hidden;}
+  .app{height:100dvh;min-height:0;overflow:hidden;}
+  .main{height:100%;min-height:0;display:flex;flex-direction:column;overflow:hidden;}
+  .topbar{position:relative;top:auto;flex:0 0 auto;}
+  .content{flex:1 1 auto;min-height:0;overflow-y:auto;overscroll-behavior-y:contain;-webkit-overflow-scrolling:touch;padding-bottom:calc(84px + env(safe-area-inset-bottom,0px));}
+  .mobile-nav{position:fixed;left:0;right:0;bottom:0;height:calc(64px + env(safe-area-inset-bottom,0px));padding-bottom:env(safe-area-inset-bottom,0px);box-sizing:border-box;}
+}
