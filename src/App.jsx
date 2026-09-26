@@ -1,112 +1,189 @@
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import {
-  LayoutDashboard, BriefcaseBusiness, CalendarCheck2, WalletCards,
-  BarChart3, Users, Settings, Search, Bell, Plus, ArrowUpRight,
-  Clock3, CheckCircle2, CircleAlert, ChevronDown, Menu, X, MoreHorizontal
+  LayoutDashboard, BriefcaseBusiness, CalendarCheck2, WalletCards, BarChart3, Users,
+  Settings, Search, Bell, Plus, ArrowUpRight, Clock3, CheckCircle2, CircleAlert,
+  ChevronDown, Menu, X, MoreHorizontal, Filter, Download, TrendingUp, UserPlus,
+  CircleDollarSign, ClipboardList, SlidersHorizontal
 } from "lucide-react";
 
 const nav = [
-  ["Overview", LayoutDashboard], ["Work", BriefcaseBusiness],
-  ["Attendance", CalendarCheck2], ["Payments", WalletCards],
-  ["Reports", BarChart3], ["Employees", Users]
+  ["Overview", LayoutDashboard], ["Work", BriefcaseBusiness], ["Attendance", CalendarCheck2],
+  ["Payments", WalletCards], ["Reports", BarChart3], ["Employees", Users]
 ];
 
-const work = [
-  { title: "Production planning", owner: "Ananya Rao", progress: 82, status: "In progress" },
-  { title: "Monthly attendance review", owner: "Rahul Kumar", progress: 64, status: "In progress" },
-  { title: "Payment reconciliation", owner: "Meera S", progress: 100, status: "Completed" }
+const workSeed = [
+  { title: "Production planning", owner: "Ananya Rao", progress: 82, status: "In progress", due: "Today" },
+  { title: "Monthly attendance review", owner: "Rahul Kumar", progress: 64, status: "In progress", due: "Tomorrow" },
+  { title: "Payment reconciliation", owner: "Meera S", progress: 100, status: "Completed", due: "25 Sep" },
+  { title: "Inventory audit", owner: "Vikram Shah", progress: 38, status: "At risk", due: "Tomorrow" },
+  { title: "Weekly production report", owner: "Priya Nair", progress: 76, status: "In progress", due: "28 Sep" }
+];
+
+const employeesSeed = [
+  ["Ananya Rao","Production","Present","₹28,500"], ["Rahul Kumar","Operations","Late","₹25,000"],
+  ["Meera S","Accounts","Present","₹31,500"], ["Vikram Shah","Warehouse","Absent","₹22,000"],
+  ["Priya Nair","Production","Present","₹27,500"], ["Arjun Das","Operations","Present","₹24,000"]
 ];
 
 function App() {
   const [active, setActive] = useState("Overview");
   const [mobileOpen, setMobileOpen] = useState(false);
   const [role, setRole] = useState("Admin");
+  const [query, setQuery] = useState("");
+  const [modal, setModal] = useState(null);
+  const [workItems, setWorkItems] = useState(workSeed);
 
-  return (
-    <div className="app">
-      <aside className={mobileOpen ? "sidebar open" : "sidebar"}>
-        <div className="brand"><div className="brand-mark">U</div><div><b>UI Template</b><span>Work management</span></div></div>
-        <div className="workspace"><span>Workspace</span><button><span>Acme Operations</span><ChevronDown size={15}/></button></div>
-        <nav>{nav.map(([label, Icon]) =>
-          <button key={label} className={active === label ? "nav-item active" : "nav-item"} onClick={() => {setActive(label);setMobileOpen(false)}}><Icon size={19}/><span>{label}</span></button>
-        )}</nav>
-        <div className="sidebar-bottom">
-          <button className="nav-item"><Settings size={19}/><span>Settings</span></button>
-          <div className="user-mini"><div className="avatar">SC</div><div><b>Shivaraj</b><span>{role}</span></div><MoreHorizontal size={18}/></div>
+  const go = (page) => { setActive(page); setMobileOpen(false); setQuery(""); };
+
+  const page = {
+    Overview: <OverviewPage go={go} />,
+    Work: <WorkPage items={workItems} setItems={setWorkItems} query={query} setQuery={setQuery} openModal={()=>setModal("work")} />,
+    Attendance: <AttendancePage query={query} setQuery={setQuery} />,
+    Payments: <PaymentsPage query={query} setQuery={setQuery} />,
+    Reports: <ReportsPage />,
+    Employees: <EmployeesPage query={query} setQuery={setQuery} openModal={()=>setModal("employee")} />,
+    Settings: <SettingsPage role={role} />
+  }[active];
+
+  return <div className="app">
+    <aside className={mobileOpen ? "sidebar open" : "sidebar"}>
+      <div className="brand"><div className="brand-mark">U</div><div><b>UI Template</b><span>Work management</span></div></div>
+      <div className="workspace"><span>Workspace</span><button><span>Acme Operations</span><ChevronDown size={15}/></button></div>
+      <nav>{nav.map(([label, Icon]) => <button key={label} className={active===label?"nav-item active":"nav-item"} onClick={()=>go(label)}><Icon size={19}/><span>{label}</span></button>)}</nav>
+      <div className="sidebar-bottom">
+        <button className={active==="Settings"?"nav-item active":"nav-item"} onClick={()=>go("Settings")}><Settings size={19}/><span>Settings</span></button>
+        <div className="user-mini"><div className="avatar">SC</div><div><b>Shivaraj</b><span>{role}</span></div><MoreHorizontal size={18}/></div>
+      </div>
+    </aside>
+
+    <main className="main">
+      <header className="topbar">
+        <button className="icon-btn menu" onClick={()=>setMobileOpen(!mobileOpen)}>{mobileOpen?<X/>:<Menu/>}</button>
+        <div className="breadcrumbs"><span>Workspace</span><b>/</b><strong>{active}</strong></div>
+        <div className="top-actions">
+          <div className="search"><Search size={17}/><input value={query} onChange={e=>setQuery(e.target.value)} placeholder="Search anything..." /></div>
+          <button className="icon-btn"><Bell size={19}/><i/></button>
+          <button className="role-switch" onClick={()=>setRole(role==="Admin"?"Employee":"Admin")}>{role}<ChevronDown size={15}/></button>
         </div>
-      </aside>
+      </header>
+      <div className="content">{page}</div>
+      <div className="mobile-nav">{nav.slice(0,5).map(([label,Icon])=><button key={label} className={active===label?"active":""} onClick={()=>go(label)}><Icon size={19}/><span>{label}</span></button>)}</div>
+    </main>
 
-      <main className="main">
-        <header className="topbar">
-          <button className="icon-btn menu" onClick={() => setMobileOpen(!mobileOpen)}>{mobileOpen ? <X/> : <Menu/>}</button>
-          <div className="breadcrumbs"><span>Workspace</span><b>/</b><strong>{active}</strong></div>
-          <div className="top-actions">
-            <div className="search"><Search size={17}/><input placeholder="Search anything..." /></div>
-            <button className="icon-btn"><Bell size={19}/><i/></button>
-            <button className="role-switch" onClick={() => setRole(role === "Admin" ? "Employee" : "Admin")}>{role}<ChevronDown size={15}/></button>
-          </div>
-        </header>
-
-        <div className="content">
-          <section className="welcome">
-            <div><p className="eyebrow">Monday, 26 September 2026</p><h1>Good morning, Shivaraj <span>✦</span></h1><p>Here’s what’s happening across your workspace today.</p></div>
-            <button className="primary"><Plus size={18}/> Create work</button>
-          </section>
-
-          <section className="stats">
-            <Stat icon={Users} label="Total employees" value="48" change="+4 this month" />
-            <Stat icon={CalendarCheck2} label="Present today" value="42" change="87.5% attendance" />
-            <Stat icon={BriefcaseBusiness} label="Active work" value="23" change="8 due this week" />
-            <Stat icon={WalletCards} label="Pending payments" value="₹1.84L" change="12 employees" />
-          </section>
-
-          <section className="grid">
-            <div className="card attendance-card">
-              <div className="card-head"><div><h2>Attendance</h2><p>Today’s workforce overview</p></div><button className="ghost">View details <ArrowUpRight size={16}/></button></div>
-              <div className="attendance-body">
-                <div className="ring"><div><strong>87.5%</strong><span>Present</span></div></div>
-                <div className="attendance-legend">
-                  <Legend label="Present" value="42" cls="present"/><Legend label="Late" value="3" cls="late"/><Legend label="Absent" value="3" cls="absent"/>
-                </div>
-              </div>
-              <div className="attendance-note"><Clock3 size={16}/><span>Average check-in time</span><b>9:08 AM</b></div>
-            </div>
-
-            <div className="card activity-card">
-              <div className="card-head"><div><h2>Recent activity</h2><p>Latest workspace updates</p></div><button className="icon-btn"><MoreHorizontal size={19}/></button></div>
-              <div className="activity-list">
-                <Activity icon={CheckCircle2} title="Payment marked as paid" text="Rahul Kumar · ₹12,500" time="12 min ago"/>
-                <Activity icon={BriefcaseBusiness} title="New work assigned" text="Production planning · Ananya Rao" time="38 min ago"/>
-                <Activity icon={CalendarCheck2} title="Attendance updated" text="3 employees checked in" time="1 hr ago"/>
-                <Activity icon={CircleAlert} title="Work deadline approaching" text="Inventory audit · Tomorrow" time="2 hrs ago"/>
-              </div>
-            </div>
-          </section>
-
-          <section className="card work-card">
-            <div className="card-head"><div><h2>Work overview</h2><p>Track active assignments and progress</p></div><button className="ghost">See all work <ArrowUpRight size={16}/></button></div>
-            <div className="table-wrap"><table><thead><tr><th>Work</th><th>Assigned to</th><th>Progress</th><th>Status</th><th></th></tr></thead><tbody>
-              {work.map((item) => <tr key={item.title}><td><b>{item.title}</b><span className="sub">Updated today</span></td><td><div className="person"><div className="avatar small">{item.owner.split(" ").map(x=>x[0]).join("").slice(0,2)}</div>{item.owner}</div></td><td><div className="progress"><div><span style={{width:item.progress+"%"}}/></div><b>{item.progress}%</b></div></td><td><span className={item.status === "Completed" ? "badge done" : "badge"}>{item.status}</span></td><td><button className="icon-btn"><MoreHorizontal size={18}/></button></td></tr>)}
-            </tbody></table></div>
-          </section>
-
-          <section className="quick">
-            <Quick icon={Plus} title="Create new work" text="Assign a task to your team" />
-            <Quick icon={CalendarCheck2} title="Manage attendance" text="Review today’s check-ins" />
-            <Quick icon={WalletCards} title="Process payments" text="Review pending payouts" />
-            <Quick icon={BarChart3} title="View reports" text="Explore workforce insights" />
-          </section>
-        </div>
-
-        <div className="mobile-nav">{nav.slice(0,5).map(([label,Icon]) => <button key={label} className={active===label?"active":""} onClick={()=>setActive(label)}><Icon size={19}/><span>{label}</span></button>)}</div>
-      </main>
-    </div>
-  );
+    {modal==="work" && <WorkModal close={()=>setModal(null)} add={(item)=>{setWorkItems(v=>[item,...v]);setModal(null)}} />}
+    {modal==="employee" && <EmployeeModal close={()=>setModal(null)} />}
+  </div>;
 }
 
-function Stat({icon:Icon,label,value,change}) { return <div className="stat"><div className="stat-icon"><Icon size={19}/></div><p>{label}</p><strong>{value}</strong><span>{change}</span></div> }
-function Legend({label,value,cls}) { return <div><i className={cls}/><span>{label}</span><b>{value}</b></div> }
-function Activity({icon:Icon,title,text:detail,time}) { return <div className="activity"><div className="activity-icon"><Icon size={17}/></div><div><b>{title}</b><span>{detail}</span></div><time>{time}</time></div> }
-function Quick({icon:Icon,title,text}) { return <button className="quick-card"><div className="quick-icon"><Icon size={19}/></div><div><b>{title}</b><span>{text}</span></div><ArrowUpRight size={17}/></button> }
+function PageHeader({eyebrow, title, text, action}) {
+  return <section className="page-header"><div><p className="eyebrow">{eyebrow}</p><h1>{title}</h1><p>{text}</p></div>{action}</section>;
+}
+function Toolbar({children}) { return <div className="toolbar">{children}</div>; }
+function SearchBox({value,onChange,placeholder="Search..."}) { return <div className="search inline-search"><Search size={17}/><input value={value} onChange={e=>onChange(e.target.value)} placeholder={placeholder}/></div>; }
+function MiniStat({icon:Icon,label,value,meta}) { return <div className="mini-stat"><div className="stat-icon"><Icon size={18}/></div><span>{label}</span><strong>{value}</strong><small>{meta}</small></div>; }
+
+function OverviewPage({go}) {
+  return <>
+    <PageHeader eyebrow="Monday, 26 September 2026" title={<>Good morning, Shivaraj <span>✦</span></>} text="Here’s what’s happening across your workspace today." action={<button className="primary" onClick={()=>go("Work")}><Plus size={18}/> Create work</button>}/>
+    <section className="stats">
+      <MiniStat icon={Users} label="Total employees" value="48" meta="+4 this month"/>
+      <MiniStat icon={CalendarCheck2} label="Present today" value="42" meta="87.5% attendance"/>
+      <MiniStat icon={BriefcaseBusiness} label="Active work" value="23" meta="8 due this week"/>
+      <MiniStat icon={WalletCards} label="Pending payments" value="₹1.84L" meta="12 employees"/>
+    </section>
+    <section className="grid">
+      <div className="card"><CardHead title="Attendance" text="Today’s workforce overview" action={<button className="ghost" onClick={()=>go("Attendance")}>View details <ArrowUpRight size={16}/></button>}/>
+        <div className="attendance-body"><div className="ring"><div><strong>87.5%</strong><span>Present</span></div></div><div className="attendance-legend"><Legend label="Present" value="42" cls="present"/><Legend label="Late" value="3" cls="late"/><Legend label="Absent" value="3" cls="absent"/></div></div>
+        <div className="attendance-note"><Clock3 size={16}/><span>Average check-in time</span><b>9:08 AM</b></div>
+      </div>
+      <div className="card"><CardHead title="Recent activity" text="Latest workspace updates"/><div className="activity-list"><Activity icon={CheckCircle2} title="Payment marked as paid" detail="Rahul Kumar · ₹12,500" time="12 min ago"/><Activity icon={BriefcaseBusiness} title="New work assigned" detail="Production planning · Ananya Rao" time="38 min ago"/><Activity icon={CalendarCheck2} title="Attendance updated" detail="3 employees checked in" time="1 hr ago"/><Activity icon={CircleAlert} title="Work deadline approaching" detail="Inventory audit · Tomorrow" time="2 hrs ago"/></div></div>
+    </section>
+    <div className="card"><CardHead title="Work overview" text="Track active assignments and progress" action={<button className="ghost" onClick={()=>go("Work")}>See all work <ArrowUpRight size={16}/></button>}/><WorkTable items={workSeed.slice(0,3)}/></div>
+    <section className="quick"><Quick icon={Plus} title="Create new work" text="Assign a task to your team" onClick={()=>go("Work")}/><Quick icon={CalendarCheck2} title="Manage attendance" text="Review today’s check-ins" onClick={()=>go("Attendance")}/><Quick icon={WalletCards} title="Process payments" text="Review pending payouts" onClick={()=>go("Payments")}/><Quick icon={BarChart3} title="View reports" text="Explore workforce insights" onClick={()=>go("Reports")}/></section>
+  </>;
+}
+
+function WorkPage({items,setItems,query,setQuery,openModal}) {
+  const filtered=items.filter(x=>(x.title+" "+x.owner+" "+x.status).toLowerCase().includes(query.toLowerCase()));
+  const updateStatus=(title)=>setItems(items.map(x=>x.title===title?{...x,status:x.status==="Completed"?"In progress":"Completed",progress:x.status==="Completed"?60:100}:x));
+  return <>
+    <PageHeader eyebrow="Work management" title="Work" text="Plan assignments, monitor progress and keep deadlines visible." action={<button className="primary" onClick={openModal}><Plus size={18}/> New work</button>}/>
+    <section className="stats"><MiniStat icon={ClipboardList} label="Total assignments" value={items.length} meta="Across all teams"/><MiniStat icon={TrendingUp} label="In progress" value={items.filter(x=>x.status==="In progress").length} meta="Active today"/><MiniStat icon={CircleAlert} label="At risk" value={items.filter(x=>x.status==="At risk").length} meta="Needs attention"/><MiniStat icon={CheckCircle2} label="Completed" value={items.filter(x=>x.status==="Completed").length} meta="This period"/></section>
+    <div className="card"><Toolbar><SearchBox value={query} onChange={setQuery} placeholder="Search work or employee..."/><button className="secondary"><Filter size={16}/> Filters</button><button className="secondary"><Download size={16}/> Export</button></Toolbar><WorkTable items={filtered} onToggle={updateStatus}/></div>
+  </>;
+}
+
+function WorkTable({items,onToggle}) {
+  return <div className="table-wrap"><table><thead><tr><th>Work</th><th>Assigned to</th><th>Progress</th><th>Due</th><th>Status</th><th></th></tr></thead><tbody>{items.map(item=><tr key={item.title}><td><b>{item.title}</b><span className="sub">Updated today</span></td><td><div className="person"><div className="avatar small">{initials(item.owner)}</div>{item.owner}</div></td><td><div className="progress"><div><span style={{width:item.progress+"%"}}/></div><b>{item.progress}%</b></div></td><td>{item.due}</td><td><button className={"badge "+badgeClass(item.status)} onClick={()=>onToggle&&onToggle(item.title)}>{item.status}</button></td><td><button className="icon-btn"><MoreHorizontal size={18}/></button></td></tr>)}</tbody></table></div>;
+}
+
+function AttendancePage({query,setQuery}) {
+  const [rows,setRows]=useState(employeesSeed.map((x,i)=>({name:x[0],team:x[1],status:x[2],time:i===1?"9:42 AM":i===3?"—":"8:"+String(48+i).padStart(2,"0")})));
+  const filtered=rows.filter(x=>(x.name+" "+x.team).toLowerCase().includes(query.toLowerCase()));
+  const cycle=(name)=>setRows(rows.map(x=>x.name===name?{...x,status:x.status==="Present"?"Late":x.status==="Late"?"Absent":"Present"}:x));
+  return <>
+    <PageHeader eyebrow="Monday, 26 September 2026" title="Attendance" text="Review check-ins, late arrivals and absences for your team." action={<button className="secondary"><CalendarCheck2 size={16}/> Today</button>}/>
+    <section className="stats"><MiniStat icon={CheckCircle2} label="Present" value={rows.filter(x=>x.status==="Present").length} meta="On time"/><MiniStat icon={Clock3} label="Late" value={rows.filter(x=>x.status==="Late").length} meta="Needs review"/><MiniStat icon={CircleAlert} label="Absent" value={rows.filter(x=>x.status==="Absent").length} meta="Not checked in"/><MiniStat icon={Users} label="Attendance rate" value="87.5%" meta="Today"/></section>
+    <div className="card"><Toolbar><SearchBox value={query} onChange={setQuery} placeholder="Search employee..."/><button className="secondary"><Filter size={16}/> All teams</button></Toolbar><div className="table-wrap"><table><thead><tr><th>Employee</th><th>Team</th><th>Check-in</th><th>Status</th><th>Action</th></tr></thead><tbody>{filtered.map(x=><tr key={x.name}><td><div className="person"><div className="avatar small">{initials(x.name)}</div><b>{x.name}</b></div></td><td>{x.team}</td><td>{x.time}</td><td><span className={"badge "+statusClass(x.status)}>{x.status}</span></td><td><button className="text-action" onClick={()=>cycle(x.name)}>Change status</button></td></tr>)}</tbody></table></div></div>
+  </>;
+}
+
+function PaymentsPage({query,setQuery}) {
+  const [tab,setTab]=useState("Pending");
+  const [paid,setPaid]=useState(["Meera S"]);
+  const payments=employeesSeed.map(x=>({name:x[0],team:x[1],amount:x[3],status:paid.includes(x[0])?"Paid":x[0]==="Vikram Shah"?"Overdue":"Pending"}));
+  const visible=payments.filter(x=>(tab==="All"||x.status===tab)&&(x.name+" "+x.team).toLowerCase().includes(query.toLowerCase()));
+  return <>
+    <PageHeader eyebrow="Payroll workspace" title="Payments" text="Track employee payouts, pending amounts and payment history." action={<button className="primary"><Plus size={18}/> Record payment</button>}/>
+    <section className="stats"><MiniStat icon={CircleDollarSign} label="Pending" value="₹1.84L" meta="12 employees"/><MiniStat icon={CheckCircle2} label="Paid this month" value="₹8.42L" meta="36 employees"/><MiniStat icon={CircleAlert} label="Overdue" value="₹22,000" meta="1 employee"/><MiniStat icon={WalletCards} label="Total payroll" value="₹10.48L" meta="48 employees"/></section>
+    <div className="card"><Toolbar><div className="tabs">{["Pending","Paid","Overdue","All"].map(x=><button key={x} className={tab===x?"tab active":"tab"} onClick={()=>setTab(x)}>{x}</button>)}</div><SearchBox value={query} onChange={setQuery} placeholder="Search employee..."/></Toolbar><div className="table-wrap"><table><thead><tr><th>Employee</th><th>Team</th><th>Amount</th><th>Status</th><th></th></tr></thead><tbody>{visible.map(x=><tr key={x.name}><td><div className="person"><div className="avatar small">{initials(x.name)}</div><b>{x.name}</b></div></td><td>{x.team}</td><td><b>{x.amount}</b></td><td><span className={"badge "+statusClass(x.status)}>{x.status}</span></td><td>{x.status!=="Paid"&&<button className="text-action" onClick={()=>setPaid(v=>[...v,x.name])}>Mark paid</button>}</td></tr>)}</tbody></table></div></div>
+  </>;
+}
+
+function ReportsPage() {
+  const bars=[58,72,64,82,76,91,87,96,84,93,89,98];
+  return <>
+    <PageHeader eyebrow="Insights" title="Reports" text="A clear view of attendance, work completion and payroll activity." action={<button className="secondary"><Download size={16}/> Export report</button>}/>
+    <section className="stats"><MiniStat icon={TrendingUp} label="Work completion" value="78%" meta="+6.4% vs last month"/><MiniStat icon={CalendarCheck2} label="Attendance" value="91%" meta="+2.1% vs last month"/><MiniStat icon={WalletCards} label="Payroll processed" value="84%" meta="₹8.42L this month"/><MiniStat icon={Users} label="Team utilization" value="76%" meta="48 employees"/></section>
+    <div className="report-grid">
+      <div className="card"><CardHead title="Work completion trend" text="Last 12 periods"/><div className="bars">{bars.map((h,i)=><div key={i} className="bar-col"><span style={{height:h+"%"}}/><small>{i+1}</small></div>)}</div></div>
+      <div className="card"><CardHead title="Work by status" text="Current assignments"/><div className="donut"><div><strong>23</strong><span>Active work</span></div></div><div className="report-legend"><Legend label="In progress" value="14" cls="present"/><Legend label="At risk" value="3" cls="late"/><Legend label="Completed" value="6" cls="done-dot"/></div></div>
+    </div>
+    <div className="card report-list"><CardHead title="Available reports" text="Ready-to-use workspace reports"/>{["Daily attendance summary","Monthly payment register","Work completion report","Employee productivity overview"].map((x,i)=><div className="report-row" key={x}><div className="quick-icon"><BarChart3 size={18}/></div><div><b>{x}</b><span>Updated {i+1} hour{i?"s":""} ago</span></div><button className="secondary">Open <ArrowUpRight size={15}/></button></div>)}</div>
+  </>;
+}
+
+function EmployeesPage({query,setQuery,openModal}) {
+  const filtered=employeesSeed.filter(x=>(x[0]+" "+x[1]).toLowerCase().includes(query.toLowerCase()));
+  return <>
+    <PageHeader eyebrow="People" title="Employees" text="Manage your team directory and keep employee details organized." action={<button className="primary" onClick={openModal}><UserPlus size={18}/> Add employee</button>}/>
+    <div className="card"><Toolbar><SearchBox value={query} onChange={setQuery} placeholder="Search employee or team..."/><button className="secondary"><Filter size={16}/> Filter</button></Toolbar><div className="employee-grid">{filtered.map(x=><div className="employee-card" key={x[0]}><div className="person"><div className="avatar">{initials(x[0])}</div><div><b>{x[0]}</b><span>{x[1]}</span></div></div><span className={"badge "+statusClass(x[2])}>{x[2]}</span><div className="employee-meta"><span>Monthly pay</span><b>{x[3]}</b></div><button className="ghost wide">View profile <ArrowUpRight size={15}/></button></div>)}</div></div>
+  </>;
+}
+
+function SettingsPage({role}) {
+  const [prefs,setPrefs]=useState({alerts:true,compact:false,auto:true});
+  const toggle=k=>setPrefs(v=>({...v,[k]:!v[k]}));
+  return <>
+    <PageHeader eyebrow="Workspace controls" title="Settings" text="Configure your workspace preferences. Backend settings will be connected later."/>
+    <div className="settings-grid"><div className="card settings-card"><CardHead title="Workspace" text="Basic workspace information"/><label>Workspace name<input value="Acme Operations" readOnly/></label><label>Default role<input value={role} readOnly/></label></div><div className="card settings-card"><CardHead title="Preferences" text="Local UI preferences for this prototype"/><SettingRow title="Activity notifications" text="Show alerts for important workspace events" value={prefs.alerts} toggle={()=>toggle("alerts")}/><SettingRow title="Compact tables" text="Reduce row spacing in data tables" value={prefs.compact} toggle={()=>toggle("compact")}/><SettingRow title="Automatic check-in reminder" text="Keep reminder controls visible" value={prefs.auto} toggle={()=>toggle("auto")}/></div></div>
+  </>;
+}
+
+function SettingRow({title,text,value,toggle}) { return <div className="setting-row"><div><b>{title}</b><span>{text}</span></div><button className={"toggle "+(value?"on":"")} onClick={toggle}><i/></button></div>; }
+function CardHead({title,text,action}) { return <div className="card-head"><div><h2>{title}</h2><p>{text}</p></div>{action||<button className="icon-btn"><MoreHorizontal size={19}/></button>}</div>; }
+function Legend({label,value,cls}) { return <div><i className={cls}/><span>{label}</span><b>{value}</b></div>; }
+function Activity({icon:Icon,title,detail,time}) { return <div className="activity"><div className="activity-icon"><Icon size={17}/></div><div><b>{title}</b><span>{detail}</span></div><time>{time}</time></div>; }
+function Quick({icon:Icon,title,text,onClick}) { return <button className="quick-card" onClick={onClick}><div className="quick-icon"><Icon size={19}/></div><div><b>{title}</b><span>{text}</span></div><ArrowUpRight size={17}/></button>; }
+function initials(name) { return name.split(" ").map(x=>x[0]).join("").slice(0,2); }
+function badgeClass(s) { return s==="Completed"?"done":s==="At risk"?"risk":""; }
+function statusClass(s) { return s==="Present"||s==="Paid"?"done":s==="Late"?"late":s==="Overdue"||s==="Absent"?"risk":""; }
+
+function WorkModal({close,add}) {
+  const [title,setTitle]=useState(""); const [owner,setOwner]=useState("Ananya Rao");
+  return <Modal title="Create new work" close={close}><label>Work title<input autoFocus value={title} onChange={e=>setTitle(e.target.value)} placeholder="e.g. Weekly production review"/></label><label>Assign to<select value={owner} onChange={e=>setOwner(e.target.value)}>{employeesSeed.map(x=><option key={x[0]}>{x[0]}</option>)}</select></label><div className="modal-actions"><button className="secondary" onClick={close}>Cancel</button><button className="primary" disabled={!title.trim()} onClick={()=>add({title:title.trim(),owner,progress:0,status:"In progress",due:"This week"})}>Create work</button></div></Modal>;
+}
+function EmployeeModal({close}) { return <Modal title="Add employee" close={close}><label>Full name<input autoFocus placeholder="Employee name"/></label><label>Team<input placeholder="Department or team"/></label><label>Monthly pay<input placeholder="₹ 0"/></label><div className="modal-actions"><button className="secondary" onClick={close}>Cancel</button><button className="primary" onClick={close}>Add employee</button></div></Modal>; }
+function Modal({title,close,children}) { return <div className="modal-backdrop" onMouseDown={e=>e.target===e.currentTarget&&close()}><div className="modal"><div className="modal-head"><div><p className="eyebrow">UI prototype</p><h2>{title}</h2></div><button className="icon-btn" onClick={close}><X size={19}/></button></div>{children}</div></div>; }
 
 export default App;
