@@ -42,3 +42,34 @@ html,body,#root{min-height:100%;background:var(--bg,#f6f7f9)}
 .app.theme-light .topbar{background:rgba(255,255,255,.96);color:var(--text)}
 .app.theme-light .topbar,.app.theme-light .sidebar,.app.theme-light .card,.app.theme-light .quick-card,.app.theme-light .employee-card,.app.theme-light .mobile-nav{color:var(--text)}
 .app.theme-light .breadcrumbs strong,.app.theme-light .card h2,.app.theme-light td b,.app.theme-light .employee-card b,.app.theme-light .quick-card,.app.theme-light .settings-card input,.app.theme-light .settings-card select,.app.theme-light .modal input,.app.theme-light .modal select{color:var(--text)}
+
+
+/* Refined accent palette */
+.app.theme-light{--accent:#4f6fd8;--accent-soft:#eef2ff;--accent-2:#2f9b78;--accent-warm:#d9953f;--accent-red:#d66b6b}
+.app.theme-light .brand-mark{background:linear-gradient(135deg,#536fda,#758de3);box-shadow:0 6px 16px rgba(79,111,216,.18)}
+.app.theme-light .nav-item.active{background:#eef2ff;color:#405fc4}
+.app.theme-light .nav-item.active svg{color:#536fda}
+.app.theme-light .stat:nth-child(1) .stat-icon{background:#eef2ff;color:#536fda;border-color:#e0e7ff}
+.app.theme-light .stat:nth-child(2) .stat-icon{background:#edf8f4;color:#2f9b78;border-color:#d9f0e7}
+.app.theme-light .stat:nth-child(3) .stat-icon{background:#fff6e9;color:#c78638;border-color:#f7e8cf}
+.app.theme-light .stat:nth-child(4) .stat-icon{background:#f7efff;color:#9562c7;border-color:#eadcf7}
+.app.theme-light .quick-card:hover{border-color:#d7def5;box-shadow:0 8px 22px rgba(54,73,120,.07);transform:translateY(-1px);transition:.18s}
+.app.theme-light .quick-card:nth-child(1) .quick-icon{background:#eef2ff;color:#536fda;border-color:#e0e7ff}
+.app.theme-light .quick-card:nth-child(2) .quick-icon{background:#edf8f4;color:#2f9b78;border-color:#d9f0e7}
+.app.theme-light .quick-card:nth-child(3) .quick-icon{background:#fff6e9;color:#c78638;border-color:#f7e8cf}
+.app.theme-light .quick-card:nth-child(4) .quick-icon{background:#f7efff;color:#9562c7;border-color:#eadcf7}
+.app.theme-light .ring{background:conic-gradient(#536fda 0 87.5%,#e9edf6 87.5%)}
+.app.theme-light .attendance-legend i.present{background:#536fda}
+.app.theme-light .attendance-legend i.late{background:#d9953f}
+.app.theme-light .attendance-legend i.absent{background:#d66b6b}
+.app.theme-light .progress>div span{background:linear-gradient(90deg,#536fda,#7189df)}
+.app.theme-light .badge.done{background:#edf8f4;color:#2f8067}
+.app.theme-light .badge.risk{background:#fff0ef;color:#bd5f5f}
+.app.theme-light .tab.active{background:#eef2ff;color:#405fc4}
+.app.theme-light .text-action{color:#536fda}
+.app.theme-light .primary{background:linear-gradient(135deg,#4f6fd8,#607cdb);box-shadow:0 6px 14px rgba(79,111,216,.16)}
+.app.theme-light .primary:hover{filter:brightness(1.03);transform:translateY(-1px)}
+.app.theme-light .bar-col span{background:linear-gradient(to top,#cdd7f7,#7088df)}
+.app.theme-light .donut{background:conic-gradient(#536fda 0 61%,#d9953f 61% 74%,#d9dee8 74% 100%)}
+.app.theme-light .icon-btn:hover,.app.theme-light .secondary:hover{border-color:#d4dcf3;background:#f7f9ff;color:#536fda}
+.app.theme-dark{--accent:#8298df}
