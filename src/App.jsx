@@ -166,7 +166,6 @@ function WorkPage({items,setItems,query,setQuery,openModal}) {
   const updateStatus=(title)=>setItems(items.map(x=>x.title===title?{...x,status:x.status==="Completed"?"In progress":"Completed",progress:x.status==="Completed"?60:100}:x));
   return <>
     <PageHeader eyebrow="Work management" title="Work" text="Plan assignments, monitor progress and keep deadlines visible." action={<button className="primary" onClick={openModal}><Plus size={18}/> New work</button>}/>
-    <section className="stats"><MiniStat icon={ClipboardList} label="Total assignments" value={items.length} meta="Across all teams"/><MiniStat icon={TrendingUp} label="In progress" value={items.filter(x=>x.status==="In progress").length} meta="Active today"/><MiniStat icon={CircleAlert} label="At risk" value={items.filter(x=>x.status==="At risk").length} meta="Needs attention"/><MiniStat icon={CheckCircle2} label="Completed" value={items.filter(x=>x.status==="Completed").length} meta="This period"/></section>
     <div className="card"><Toolbar><SearchBox value={query} onChange={setQuery} placeholder="Search work or employee..."/><button className="secondary"><Filter size={16}/> Filters</button><button className="secondary"><Download size={16}/> Export</button></Toolbar><WorkTable items={filtered} onToggle={updateStatus}/></div>
   </>;
 }
@@ -181,7 +180,6 @@ function AttendancePage({query,setQuery}) {
   const cycle=(name)=>setRows(rows.map(x=>x.name===name?{...x,status:x.status==="Present"?"Late":x.status==="Late"?"Absent":"Present"}:x));
   return <>
     <PageHeader eyebrow="Monday, 26 September 2026" title="Attendance" text="Review check-ins, late arrivals and absences for your team." action={<button className="secondary"><CalendarCheck2 size={16}/> Today</button>}/>
-    <section className="stats"><MiniStat icon={CheckCircle2} label="Present" value={rows.filter(x=>x.status==="Present").length} meta="On time"/><MiniStat icon={Clock3} label="Late" value={rows.filter(x=>x.status==="Late").length} meta="Needs review"/><MiniStat icon={CircleAlert} label="Absent" value={rows.filter(x=>x.status==="Absent").length} meta="Not checked in"/><MiniStat icon={Users} label="Attendance rate" value="87.5%" meta="Today"/></section>
     <div className="card"><Toolbar><SearchBox value={query} onChange={setQuery} placeholder="Search employee..."/><button className="secondary"><Filter size={16}/> All teams</button></Toolbar><div className="table-wrap"><table><thead><tr><th>Employee</th><th>Team</th><th>Check-in</th><th>Status</th><th>Action</th></tr></thead><tbody>{filtered.map(x=><tr key={x.name}><td><div className="person"><div className="avatar small">{initials(x.name)}</div><b>{x.name}</b></div></td><td>{x.team}</td><td>{x.time}</td><td><span className={"badge "+statusClass(x.status)}>{x.status}</span></td><td><button className="text-action" onClick={()=>cycle(x.name)}>Change status</button></td></tr>)}</tbody></table></div></div>
   </>;
 }
@@ -193,7 +191,6 @@ function PaymentsPage({query,setQuery}) {
   const visible=payments.filter(x=>(tab==="All"||x.status===tab)&&(x.name+" "+x.team).toLowerCase().includes(query.toLowerCase()));
   return <>
     <PageHeader eyebrow="Payroll workspace" title="Payments" text="Track employee payouts, pending amounts and payment history." action={<button className="primary"><Plus size={18}/> Record payment</button>}/>
-    <section className="stats"><MiniStat icon={CircleDollarSign} label="Pending" value="₹1.84L" meta="12 employees"/><MiniStat icon={CheckCircle2} label="Paid this month" value="₹8.42L" meta="36 employees"/><MiniStat icon={CircleAlert} label="Overdue" value="₹22,000" meta="1 employee"/><MiniStat icon={WalletCards} label="Total payroll" value="₹10.48L" meta="48 employees"/></section>
     <div className="card"><Toolbar><div className="tabs">{["Pending","Paid","Overdue","All"].map(x=><button key={x} className={tab===x?"tab active":"tab"} onClick={()=>setTab(x)}>{x}</button>)}</div><SearchBox value={query} onChange={setQuery} placeholder="Search employee..."/></Toolbar><div className="table-wrap"><table><thead><tr><th>Employee</th><th>Team</th><th>Amount</th><th>Status</th><th></th></tr></thead><tbody>{visible.map(x=><tr key={x.name}><td><div className="person"><div className="avatar small">{initials(x.name)}</div><b>{x.name}</b></div></td><td>{x.team}</td><td><b>{x.amount}</b></td><td><span className={"badge "+statusClass(x.status)}>{x.status}</span></td><td>{x.status!=="Paid"&&<button className="text-action" onClick={()=>setPaid(v=>[...v,x.name])}>Mark paid</button>}</td></tr>)}</tbody></table></div></div>
   </>;
 }
