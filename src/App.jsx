@@ -49,7 +49,7 @@ function App() {
   const page = {
     Overview: <OverviewPage go={go} />,
     Work: <WorkPage items={workItems} setItems={setWorkItems} query={query} setQuery={setQuery} openModal={()=>setModal("work")} />,
-    Attendance: <AttendancePage query={query} setQuery={setQuery} />,
+    Attendance: <AttendancePage query={query} setQuery={setQuery} openMarkAttendance={()=>setModal("attendance")} />,
     Payments: <PaymentsPage query={query} setQuery={setQuery} />,
     Advances: <AdvancesPage advances={advances} openModal={()=>setModal("advance")} />,
     Reports: <ReportsPage />,
@@ -139,16 +139,34 @@ function WorkTable({items,onToggle}) {
   return <div className="table-wrap"><table><thead><tr><th>Work</th><th>Assigned to</th><th>Progress</th><th>Due</th><th>Status</th><th></th></tr></thead><tbody>{items.map(item=><tr key={item.title}><td><b>{item.title}</b><span className="sub">Updated today</span></td><td><div className="person"><div className="avatar small">{initials(item.owner)}</div>{item.owner}</div></td><td><div className="progress"><div><span style={{width:item.progress+"%"}}/></div><b>{item.progress}%</b></div></td><td>{item.due}</td><td><button className={"badge "+badgeClass(item.status)} onClick={()=>onToggle&&onToggle(item.title)}>{item.status}</button></td><td><button className="icon-btn"><MoreHorizontal size={18}/></button></td></tr>)}</tbody></table></div>;
 }
 
-function AttendancePage({query,setQuery}) {
+function AttendancePage({query,setQuery,openMarkAttendance}) {
   const [rows,setRows]=useState(employeesSeed.map((x,i)=>({name:x[0],team:x[1],status:x[2],time:i===1?"9:42 AM":i===3?"—":"8:"+String(48+i).padStart(2,"0")})));
+  const [work,setWork]=useState("Production planning");
+  const [manageColumns,setManageColumns]=useState(false);
+  const [columns,setColumns]=useState({employee:true,team:true,checkin:true,status:true,action:true});
   const filtered=rows.filter(x=>(x.name+" "+x.team).toLowerCase().includes(query.toLowerCase()));
   const cycle=(name)=>setRows(rows.map(x=>x.name===name?{...x,status:x.status==="Present"?"Late":x.status==="Late"?"Absent":"Present"}:x));
   return <>
-    <PageHeader eyebrow="Monday, 26 September 2026" title="Attendance" text="Review check-ins, late arrivals and absences for your team." action={<button className="secondary"><CalendarCheck2 size={16}/> Today</button>}/>
-    <div className="card"><Toolbar><SearchBox value={query} onChange={setQuery} placeholder="Search employee..."/><button className="secondary"><Filter size={16}/> All teams</button></Toolbar><div className="table-wrap"><table><thead><tr><th>Employee</th><th>Team</th><th>Check-in</th><th>Status</th><th>Action</th></tr></thead><tbody>{filtered.map(x=><tr key={x.name}><td><div className="person"><div className="avatar small">{initials(x.name)}</div><b>{x.name}</b></div></td><td>{x.team}</td><td>{x.time}</td><td><span className={"badge "+statusClass(x.status)}>{x.status}</span></td><td><button className="text-action" onClick={()=>cycle(x.name)}>Change status</button></td></tr>)}</tbody></table></div></div>
+    <PageHeader eyebrow="Monday, 26 September 2026" title="Attendance" text="Review check-ins, late arrivals and absences for your team." action={
+      <div className="attendance-actions">
+        <select className="work-selector" value={work} onChange={e=>setWork(e.target.value)} aria-label="Select work or contract">
+          <option>Production planning</option><option>Monthly attendance review</option><option>Payment reconciliation</option><option>Inventory audit</option><option>Contract · Acme Operations</option>
+        </select>
+        <button className="secondary" onClick={()=>setManageColumns(true)}><SlidersHorizontal size={16}/> Manage columns</button>
+        <button className="primary" onClick={openMarkAttendance}><CalendarCheck2 size={16}/> Mark attendance</button>
+      </div>
+    }/>
+    <div className="card"><Toolbar><SearchBox value={query} onChange={setQuery} placeholder="Search employee..."/><button className="secondary"><Filter size={16}/> All teams</button></Toolbar>
+      <div className="table-wrap"><table><thead><tr>
+        {columns.employee&&<th>Employee</th>}{columns.team&&<th>Team</th>}{columns.checkin&&<th>Check-in</th>}{columns.status&&<th>Status</th>}{columns.action&&<th>Action</th>}
+      </tr></thead><tbody>{filtered.map(x=><tr key={x.name}>
+        {columns.employee&&<td><div className="person"><div className="avatar small">{initials(x.name)}</div><b>{x.name}</b></div></td>}
+        {columns.team&&<td>{x.team}</td>}{columns.checkin&&<td>{x.time}</td>}{columns.status&&<td><span className={"badge "+statusClass(x.status)}>{x.status}</span></td>}{columns.action&&<td><button className="text-action" onClick={()=>cycle(x.name)}>Change status</button></td>}
+      </tr>)}</tbody></table></div>
+    </div>
+    {manageColumns&&<ManageColumnsModal columns={columns} setColumns={setColumns} close={()=>setManageColumns(false)}/>}
   </>;
 }
-
 function PaymentsPage({query,setQuery}) {
   const [tab,setTab]=useState("Pending");
   const [paid,setPaid]=useState(["Meera S"]);
@@ -240,5 +258,5 @@ function AdvanceModal({close,add}) {
   return <Modal title="Add advance" close={close}><label>Employee<select value={employee} onChange={e=>setEmployee(e.target.value)}>{employeesSeed.map(x=><option key={x[0]}>{x[0]}</option>)}</select></label><label>Amount<input autoFocus value={amount} onChange={e=>setAmount(e.target.value)} placeholder="₹ 0"/></label><label>Reason<input value={reason} onChange={e=>setReason(e.target.value)} placeholder="Reason for advance"/></label><div className="modal-actions"><button className="secondary" onClick={close}>Cancel</button><button className="primary" disabled={!amount.trim()} onClick={()=>add({employee,amount:amount.trim().startsWith("₹")?amount.trim():"₹"+amount.trim(),reason:reason.trim()||"Employee advance",date:"26 Sep 2026",status:"Pending"})}>Add advance</button></div></Modal>;
 }
 function LabourModal({close}) { return <Modal title="Add labour" close={close}><label>Full name<input autoFocus placeholder="Worker name"/></label><label>Work type<select><option>Production</option><option>Paper</option><option>Mesh</option><option>General labour</option></select></label><label>Daily rate<input placeholder="₹ 0"/></label><div className="modal-actions"><button className="secondary" onClick={close}>Cancel</button><button className="primary" onClick={close}>Add labour</button></div></Modal>; }
-function AttendanceModal({close}) { return <Modal title="Mark attendance" close={close}><label>Employee<select><option>Ananya Rao</option><option>Rahul Kumar</option><option>Meera S</option><option>Vikram Shah</option><option>Priya Nair</option><option>Arjun Das</option></select></label><label>Status<select><option>Present</option><option>Late</option><option>Absent</option></select></label><div className="modal-actions"><button className="secondary" onClick={close}>Cancel</button><button className="primary" onClick={close}>Mark attendance</button></div></Modal>; }
+function AttendanceModal({close}) { return <Modal title="Mark attendance" close={close}><label>Employee<select><option>Ananya Rao</option><option>Rahul Kumar</option><option>Meera S</option><option>Vikram Shah</option><option>Priya Nair</option><option>Arjun Das</option></select></label><label>Work / Contract<select><option>Production planning</option><option>Monthly attendance review</option><option>Payment reconciliation</option><option>Inventory audit</option><option>Contract · Acme Operations</option></select></label><label>Status<select><option>Present</option><option>Late</option><option>Absent</option></select></label><div className="modal-actions"><button className="secondary" onClick={close}>Cancel</button><button className="primary" onClick={close}>Mark attendance</button></div></Modal>; }\nfunction ManageColumnsModal({columns,setColumns,close}) { const items=[["employee","Employee"],["team","Team"],["checkin","Check-in"],["status","Status"],["action","Action"]]; return <Modal title="Manage attendance columns" close={close}><p className="modal-note">Choose which columns are visible in the attendance table.</p><div className="column-options">{items.map(([key,label])=><label className="column-option" key={key}><span>{label}</span><input type="checkbox" checked={columns[key]} disabled={key==="employee"} onChange={()=>setColumns(v=>({...v,[key]:!v[key]}))}/></label>)}</div><div className="modal-actions"><button className="primary" onClick={close}>Done</button></div></Modal>; }
 function PaymentModal({close}) { return <Modal title="Process payments" close={close}><p className="modal-note">Review pending employee payouts from the Payments section before processing.</p><div className="payment-preview">{employeesSeed.filter(x=>x[0]!=="Meera S").slice(0,4).map(x=><div key={x[0]}><span>{x[0]}</span><b>{x[3]}</b></div>)}</div><div className="modal-actions"><button className="secondary" onClick={close}>Cancel</button><button className="primary" onClick={close}>Process payments</button></div></Modal>; }
