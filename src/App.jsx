@@ -81,10 +81,10 @@ function App() {
           <div className="search"><Search size={17}/><input value={query} onChange={e=>setQuery(e.target.value)} placeholder="Search anything..." /></div>
           <button className="icon-btn"><Bell size={19}/><i/></button>
           <button className="role-switch" onClick={()=>setRole(role==="Admin"?"Employee":"Admin")}>{role}<ChevronDown size={15}/></button>
-          <button className="global-plus" onClick={()=>setModal("actions")} aria-label="Open quick actions"><Plus size={21}/></button>
         </div>
       </header>
       <div className="content">{page}</div>
+      <button className="fab-plus" onClick={()=>setModal("actions")} aria-label="Open quick actions"><Plus size={22}/></button>
       <div className="mobile-nav">{nav.slice(0,5).map(([label,Icon])=><button key={label} className={active===label?"active":""} onClick={()=>go(label)}><Icon size={19}/><span>{label}</span></button>)}</div>
     </main>
 
