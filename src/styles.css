@@ -34,3 +34,11 @@ html,body,#root{min-height:100%;background:var(--bg,#f6f7f9)}
   .topbar{height:calc(60px + env(safe-area-inset-top,0px));padding-top:env(safe-area-inset-top,0px);}
   .sidebar{padding-top:max(18px, env(safe-area-inset-top,0px) + 10px);}
 }
+
+
+/* Light theme Android/system bar and text colors */
+:root{color-scheme:light;--bg:#f6f7f9;--surface:#fff;--surface-2:#fafbfc;--text:#18212f;--muted:#7e8796;--line:#e7e9ee}
+.app.theme-light{background:var(--bg);color:var(--text)}
+.app.theme-light .topbar{background:rgba(255,255,255,.96);color:var(--text)}
+.app.theme-light .topbar,.app.theme-light .sidebar,.app.theme-light .card,.app.theme-light .quick-card,.app.theme-light .employee-card,.app.theme-light .mobile-nav{color:var(--text)}
+.app.theme-light .breadcrumbs strong,.app.theme-light .card h2,.app.theme-light td b,.app.theme-light .employee-card b,.app.theme-light .quick-card,.app.theme-light .settings-card input,.app.theme-light .settings-card select,.app.theme-light .modal input,.app.theme-light .modal select{color:var(--text)}
