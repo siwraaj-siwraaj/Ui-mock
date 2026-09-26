@@ -97,3 +97,7 @@ html,body,#root{min-height:100%;background:var(--bg,#f6f7f9)}
   .action-grid{grid-template-columns:1fr}
 }
 .app.theme-dark .action-tile:hover{background:#252c37;border-color:var(--line)}
+
+/* Attendance controls */
+.attendance-actions{display:flex;align-items:center;gap:9px;flex-wrap:wrap}.work-selector{height:40px;border:1px solid var(--line);background:var(--surface);color:var(--text);border-radius:10px;padding:0 34px 0 12px;font:inherit;font-size:12px;font-weight:650;outline:none;cursor:pointer;max-width:220px}.column-options{border:1px solid var(--line);border-radius:12px;overflow:hidden}.column-option{margin:0!important;padding:12px 14px;display:flex!important;flex-direction:row!important;align-items:center;justify-content:space-between;border-bottom:1px solid var(--line);color:var(--text)!important}.column-option:last-child{border-bottom:0}.column-option input{width:17px;height:17px;accent-color:#536fda}.app.theme-dark .column-option input{accent-color:#8298df}
+@media(max-width:640px){.attendance-actions{width:100%;display:grid;grid-template-columns:1fr 1fr}.attendance-actions .work-selector{grid-column:1/-1;width:100%;max-width:none}.attendance-actions .secondary,.attendance-actions .primary{width:100%;justify-content:center}.attendance-actions .primary{white-space:nowrap}}
