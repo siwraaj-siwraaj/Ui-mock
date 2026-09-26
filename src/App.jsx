@@ -93,7 +93,8 @@ function App() {
     Overview: <OverviewPage go={go} />,
     Work: <WorkPage items={workItems} setItems={setWorkItems} query={query} setQuery={setQuery} openModal={()=>setModal("work")} />,
     Attendance: <AttendancePage query={query} setQuery={setQuery} />,
-    Payments: <PaymentsPage query={query} setQuery={setQuery} />,\n    Advances: <AdvancesPage />,
+    Payments: <PaymentsPage query={query} setQuery={setQuery} />,
+    Advances: <AdvancesPage />,
     Reports: <ReportsPage />,
     Employees: <EmployeesPage query={query} setQuery={setQuery} openModal={()=>setModal("employee")} />,
     Settings: <SettingsPage role={role} />
